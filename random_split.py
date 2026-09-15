@@ -18,7 +18,7 @@ for c in classes:
 random.seed(42)
 random.shuffle(all_images)
 
-# ── 80:20 split ──
+# 80:20 split
 split_index = int(0.8 * len(all_images))
 train = all_images[:split_index]
 test = all_images[split_index:]

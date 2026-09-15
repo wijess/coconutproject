@@ -13,8 +13,8 @@ review_dir = "candidates_for_review_disease"
 classes = ["gray_leaf_blight", "healthy", "leaf_rot", "nutrient_deficiency"]
 
 BLUR_THRESHOLD = 100
-GREEN_RATIO_THRESHOLD = 0.05  # lowered from 0.15 — diseased/yellowed/dried leaves
-                               # can have low green ratio and shouldn't be wrongly rejected
+GREEN_RATIO_THRESHOLD = 0.05  # 0.15 to 0.05
+
 
 HAMMING_THRESHOLDS = {
     "gray_leaf_blight": 5,

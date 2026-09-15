@@ -1,44 +1,10 @@
-"""
-Automated, multi-cue quantitative screening for nutrient-deficiency
-contamination in the disease-type "negative" classes
-(gray_leaf_blight, leaf_rot, healthy).
-
-Purpose:
-  Improves on the yellow-ratio-only version by combining THREE color-based
-  cues to better represent the different nutrient-deficiency sub-types
-  present in the merged nutrient_deficiency class:
-    1. Yellow ratio   -- captures nitrogen deficiency / general chlorosis /
-                          "yellow patches"
-    2. Brown ratio     -- captures potassium deficiency (marginal browning,
-                          necrosis)
-    3. Dark ratio      -- captures "black seed" discoloration
-
-  Boron deficiency (structural malformation, tip dieback) is NOT reliably
-  captured by any color-based cue and remains an explicit, disclosed
-  limitation of this screening approach.
-
-  A composite "symptom score" (max of the three ratios) is used, so an
-  image is flagged if it shows a strong signal on ANY of the three cues --
-  this is fairer to sub-types like black-seed discoloration than a
-  single yellow-only metric.
-
-Output:
-  1. nutrient_deficiency_screening_v2.csv  -- full per-image results/log
-  2. dataset_stage2b/positive/             -- nutrient_deficiency images (as-is)
-  3. dataset_stage2b/negative/             -- disease-type images that PASSED
-                                              the screening (i.e. NOT flagged
-                                              on any of the three cues)
-"""
-
 import cv2
 import numpy as np
 import os
 import csv
 import shutil
 
-# ---------------------------------------------------------------------
 # CONFIG
-# ---------------------------------------------------------------------
 SOURCE_DIR = "dataset_clean_disease"
 NUTRIENT_DEFICIENCY_FOLDER = os.path.join(SOURCE_DIR, "nutrient_deficiency")
 NEGATIVE_CANDIDATE_CLASSES = ["gray_leaf_blight", "leaf_rot", "healthy"]
@@ -50,7 +16,7 @@ NEGATIVE_OUT = os.path.join(STAGE2B_OUTPUT_DIR, "negative")
 CSV_LOG_PATH = "nutrient_deficiency_screening_v2.csv"
 
 # --- HSV ranges for the three symptom cues ---
-# Yellow/chlorosis
+# Yellow
 LOWER_YELLOW = np.array([15, 40, 40])
 UPPER_YELLOW = np.array([35, 255, 255])
 
@@ -65,7 +31,6 @@ UPPER_DARK = np.array([180, 255, 50])
 STD_MULTIPLIER = 1.0
 
 
-# ---------------------------------------------------------------------
 def calculate_cue_ratios(image_path):
     """Returns (yellow_ratio, brown_ratio, dark_ratio) for one image."""
     img = cv2.imread(image_path)
@@ -89,10 +54,9 @@ def main():
     os.makedirs(POSITIVE_OUT, exist_ok=True)
     os.makedirs(NEGATIVE_OUT, exist_ok=True)
 
-    # -------------------------------------------------------------
+
     # Step 1: Build baseline distributions (per cue) from the
     # CONFIRMED nutrient_deficiency class
-    # -------------------------------------------------------------
     print("Step 1: Calculating baseline cue distributions from "
           "nutrient_deficiency class...")
 
@@ -119,11 +83,9 @@ def main():
     print(f"  Dark  : mean={np.mean(dark_vals):.4f} std={np.std(dark_vals):.4f} "
           f"threshold={dark_thresh:.4f}\n")
 
-    # -------------------------------------------------------------
     # Step 2: Screen the negative-candidate classes
     # An image is flagged if it exceeds ANY of the three thresholds
     # (i.e. shows a strong signal on at least one symptom cue)
-    # -------------------------------------------------------------
     print("Step 2: Screening disease-type classes (multi-cue)...\n")
 
     log_rows = []
@@ -167,9 +129,8 @@ def main():
         print(f"  {c:20s}: total={total:5d}  flagged={flagged_count:5d} "
               f"({pct_flagged:5.1f}%)  passed={passed_count:5d}")
 
-    # -------------------------------------------------------------
+
     # Step 3: Copy positive class as-is
-    # -------------------------------------------------------------
     print("\nStep 3: Copying confirmed nutrient_deficiency images "
           "as the positive class...")
 
@@ -189,18 +150,14 @@ def main():
             for name, err in copy_failures:
                 f.write(f"{name}: {err}\n")
 
-    # -------------------------------------------------------------
     # Step 4: Save CSV log
-    # -------------------------------------------------------------
     with open(CSV_LOG_PATH, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["class", "image", "yellow_ratio", "brown_ratio", "dark_ratio",
                           "flagged_yellow", "flagged_brown", "flagged_dark", "flagged_overall"])
         writer.writerows(log_rows)
 
-    # -------------------------------------------------------------
-    # Final summary
-    # -------------------------------------------------------------
+#sumary
     total_negative_final = sum(v[2] for v in class_summary.values())
     total_positive_final = len(nd_images)
 

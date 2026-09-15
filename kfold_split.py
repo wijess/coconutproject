@@ -16,7 +16,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.metrics import confusion_matrix, classification_report, precision_score, recall_score, f1_score
 
-# Seeds (Reproducibility)
+# Seeds
 os.environ['PYTHONHASHSEED'] = '42'
 os.environ['TF_DETERMINISTIC_OPS'] = '1'
 random.seed(42)
@@ -43,7 +43,6 @@ skf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 if os.path.exists(output_dir):
     shutil.rmtree(output_dir)
 
-# Create Directory Structure
 for fold, (train_idx, test_idx) in enumerate(skf.split(image_paths, labels), start=1):
     for split in ["train", "test"]:
         for c in classes: os.makedirs(os.path.join(output_dir, f"fold{fold}", split, c), exist_ok=True)
@@ -59,11 +58,9 @@ accuracies = []
 best_accuracy = 0.0
 best_fold = -1
 
-# Arrays to accumulate all predictions and ground truths across folds
 all_true_labels = []
 all_pred_labels = []
 
-# To store the training history of the best performing fold
 best_history1 = None
 best_history2 = None
 
@@ -139,9 +136,8 @@ for fold in range(1, k + 1):
         model.save("best_directory_kfold.keras")
         print(f"   💾 New best model saved from Fold {fold}")
 
-# ─────────────────────────────────────────────
-# 6. FINAL INTER-FOLD RESULTS (EVALUATION METRIC)
-# ─────────────────────────────────────────────
+# EVALUATION METRIC
+
 print(f"\n{'=' * 40}")
 print(f"  FINAL DIRECTORY K-FOLD RESULTS")
 print(f"{'=' * 40}")
@@ -149,7 +145,6 @@ print(f"🏆 Best Fold           : Fold {best_fold} (Accuracy: {best_accuracy * 
 print(f"🏆 Mean Accuracy       : {np.mean(accuracies) * 100:.2f}%")
 print(f"📉 Std Deviation       : {np.std(accuracies) * 100:.2f}%")
 
-# Generate Global Metrics across all 5 Folds
 cm = confusion_matrix(all_true_labels, all_pred_labels)
 print("\n📊 Overall Confusion Matrix (All Folds Combined):\n", cm)
 
@@ -163,9 +158,6 @@ print(f"Overall F1 Score  : {f1:.4f}")
 print("\n📋 Overall Classification Report:\n",
       classification_report(all_true_labels, all_pred_labels, target_names=classes))
 
-# ─────────────────────────────────────────────
-# 7. PLOT TRAINING CURVES FOR THE BEST FOLD
-# ─────────────────────────────────────────────
 acc = best_history1['accuracy'] + best_history2['accuracy']
 val_acc = best_history1['val_accuracy'] + best_history2['val_accuracy']
 loss_ = best_history1['loss'] + best_history2['loss']
@@ -174,7 +166,7 @@ phase1_end = len(best_history1['accuracy'])
 
 plt.figure(figsize=(12, 5))
 
-# Accuracy Plot
+# Accuracy plot
 plt.subplot(1, 2, 1)
 plt.plot(acc, label='Training Accuracy', color='blue')
 plt.plot(val_acc, label='Validation Accuracy', color='orange')

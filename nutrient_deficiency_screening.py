@@ -38,10 +38,8 @@ def main():
     os.makedirs(POSITIVE_OUT, exist_ok=True)
     os.makedirs(NEGATIVE_OUT, exist_ok=True)
 
-    # -------------------------------------------------------------
     # Step 1: Build baseline distribution from the CONFIRMED
     # nutrient_deficiency class
-    # -------------------------------------------------------------
     print("Step 1: Calculating baseline yellow-ratio distribution "
           "from nutrient_deficiency class...")
 
@@ -60,9 +58,8 @@ def main():
           f"mean={nd_mean:.4f}, std={nd_std:.4f}")
     print(f"  Flagging threshold        : {threshold:.4f}\n")
 
-    # -------------------------------------------------------------
     # Step 2: Screen the negative-candidate classes
-    # -------------------------------------------------------------
+
     print("Step 2: Screening disease-type classes for possible "
           "co-occurring nutrient deficiency...\n")
 
@@ -102,9 +99,7 @@ def main():
         print(f"  {c:20s}: total={total:5d}  flagged={flagged_count:5d} "
               f"({pct_flagged:5.1f}%)  passed={passed_count:5d}")
 
-    # -------------------------------------------------------------
-    # Step 3: Copy positive class (nutrient_deficiency) as-is
-    # -------------------------------------------------------------
+    # Step 3: Copy positive class (nutrient_deficiency) whole 4114
     print("\nStep 3: Copying confirmed nutrient_deficiency images "
           "as the positive class...")
 
@@ -124,17 +119,14 @@ def main():
             for name, err in copy_failures:
                 f.write(f"{name}: {err}\n")
 
-    # -------------------------------------------------------------
     # Step 4: Save CSV log
-    # -------------------------------------------------------------
+
     with open(CSV_LOG_PATH, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["class", "image", "yellow_ratio", "flagged_as_contaminated"])
         writer.writerows(log_rows)
 
-    # -------------------------------------------------------------
-    # Final summary
-    # -------------------------------------------------------------
+#summary
     total_negative_final = sum(v[2] for v in class_summary.values())
     total_positive_final = len(nd_images)
 
